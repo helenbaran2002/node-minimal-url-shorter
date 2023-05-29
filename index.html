@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>url shorter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <style>
+      .input-row { display: flex; gap: 16px; }
+      #long { flex: 1; }
+      #short { margin: 16px; }
+  </style>
+</head>
+<body>
+<div>
+  <div class="input-row">
+    <label for="long">URL: </label>
+    <input id="long" placeholder="please input a url">
+    <button id="button">Submit</button>
+  </div>
+  <div id="short"></div>
+</div>
+<script>
+  const $long = document.getElementById('long')
+  const $button = document.getElementById('button')
+  const $short = document.getElementById('short')
+  $button.addEventListener('click', async () => {
+    const longUrl = $long.value.trim()
+    if (!longUrl)
+      return
+
+    const url = location.href
+    const data = { longUrl }
+    const init = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }
+
+    try {
+      const response = await fetch(url, init)
+      const json = await response.json()
+      if (json.shortUrl)
+        $short.innerText = json.shortUrl
+    } catch (e) {
+      $short.innerText = 'Error'
+    }
+  })
+</script>
+</body>
+</html>
