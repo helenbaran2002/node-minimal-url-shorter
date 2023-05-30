@@ -17,7 +17,9 @@ if (!Number.isInteger(port) || port > 65535)
 
 // 前缀, 如果未提供端口, 就使用 http://127.0.0.1
 const prefix = args.prefix || `http://127.0.0.1:${port}/`
-if (!prefix || !prefix.startsWith('http://'))
+if (!prefix || (
+  !prefix.startsWith('http://')
+  && !prefix.startsWith('https://')))
   throw new Error('prefix 参数错误')
 
 // 保存时间间隔, 如果未提供, 就使用 1000

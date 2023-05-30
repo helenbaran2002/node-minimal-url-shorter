@@ -5,28 +5,61 @@
   <title>url shorter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
   <style>
-      .input-row { display: flex; gap: 16px; }
-      #long { flex: 1; }
-      #short { margin: 16px; }
+    body { padding: 32px; }
+    .input-row { display: flex; gap: 16px; }
+    #long { flex: 1; }
+
+    .header { display: flex; }
+    .header > div { flex: 1; }
+
+    #short > div { display: flex; }
+    #short > div > div { flex: 1; }
   </style>
 </head>
 <body>
 <div>
   <div class="input-row">
     <label for="long">URL: </label>
-    <input id="long" placeholder="please input a url">
+    <input id="long" placeholder="please input a url begin with http(s)://">
     <button id="button">Submit</button>
   </div>
-  <div id="short"></div>
+  <div>
+    <div class="header">
+      <div>longUrl</div>
+      <div>shortUrl</div>
+    </div>
+    <div id="short">
+    </div>
+  </div>
 </div>
 <script>
-  const $long = document.getElementById('long')
+  const $long   = document.getElementById('long')
   const $button = document.getElementById('button')
-  const $short = document.getElementById('short')
-  $button.addEventListener('click', async () => {
+  const $short  = document.getElementById('short')
+
+  let urls = []
+  const savedUrls = localStorage.getItem('urls')
+  if (savedUrls)
+    urls = JSON.parse(savedUrls)
+  for (const url of urls) {
+    const $div = document.createElement('div')
+    $div.innerHTML = url
+    $short.prepend($div)
+  }
+
+  async function getShortUrl(e) {
+    if (e.type === 'keyup' && e.key !== 'Enter')
+      return
+
     const longUrl = $long.value.trim()
     if (!longUrl)
       return
+
+    try {
+      new URL(longUrl)
+    } catch (e) {
+      return
+    }
 
     const url = location.href
     const data = { longUrl }
@@ -38,15 +71,26 @@
       body: JSON.stringify(data)
     }
 
+    let result
     try {
       const response = await fetch(url, init)
       const json = await response.json()
       if (json.shortUrl)
-        $short.innerText = json.shortUrl
+        result = `<div>${longUrl}</div><div><a href="${json.shortUrl}">${json.shortUrl}</a></div>`
+      else
+        result = `<div>${longUrl}</div><div></div>`
     } catch (e) {
-      $short.innerText = 'Error'
+      result = `<div>${longUrl}</div><div>Error</div>`
     }
-  })
+    const $div = document.createElement('div')
+    $div.innerHTML = result
+    $short.prepend($div)
+    urls.push(result)
+    localStorage.setItem('urls', JSON.stringify(urls))
+  }
+
+  $long.addEventListener('keyup', getShortUrl)
+  $button.addEventListener('click', getShortUrl)
 </script>
 </body>
 </html>
